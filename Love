@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Surprise ❤️</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#ff6b81;--glass:rgba(255,255,255,0.06)}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial}
+    body{background:radial-gradient(1200px 600px at 10% 20%, rgba(255,107,129,0.08), transparent), radial-gradient(800px 400px at 90% 80%, rgba(99,102,241,0.06), transparent), var(--bg);color:#e6edf3;display:grid;place-items:center}
+
+    .card{width:min(900px,94vw);background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:18px;padding:36px;box-shadow:0 8px 40px rgba(2,6,23,0.7);backdrop-filter:blur(6px);position:relative;overflow:hidden}
+
+    header{display:flex;align-items:center;gap:16px}
+    .logo{width:56px;height:56px;border-radius:12px;background:conic-gradient(from 220deg,#ff6b81, #ffb86b, #9b8cff);display:grid;place-items:center;font-weight:700}
+
+    h1{margin:0;font-size:26px}
+    p.lead{margin:8px 0 20px;color:rgba(230,237,243,0.82)}
+
+    .stage{display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:stretch}
+
+    .left{padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));min-height:300px;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative}
+
+    .heart{font-size:82px;transform:scale(1);transition:transform .6s cubic-bezier(.2,.9,.25,1)}
+    .heart.beat{transform:scale(1.12)}
+
+    .msg{margin-top:14px;text-align:center;font-size:20px;line-height:1.2;opacity:0;transform:translateY(8px);transition:all .6s ease}
+    .msg.show{opacity:1;transform:none}
+
+    .btns{display:flex;gap:12px;margin-top:20px}
+    button{cursor:pointer;padding:10px 14px;border-radius:10px;border:0;background:var(--glass);color:inherit;font-weight:600}
+    .primary{background:linear-gradient(90deg,var(--accent),#ffb86b);color:#081022;box-shadow:0 8px 30px rgba(255,107,129,0.12)}
+
+    .right{padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.012), transparent);min-height:300px;display:flex;flex-direction:column;gap:12px}
+    .scroll{overflow:auto;padding-right:6px}
+
+    .little{font-size:13px;color:rgba(230,237,243,0.7)}
+
+    /* floating hearts */
+    .float-area{position:absolute;inset:0;pointer-events:none}
+    canvas{position:absolute;inset:0;width:100%;height:100%}
+
+    footer{margin-top:18px;text-align:center;font-size:13px;color:rgba(230,237,243,0.45)}
+
+    @media (max-width:880px){.stage{grid-template-columns:1fr;}.right{order:2}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <div class="logo">💌</div>
+      <div>
+        <h1>Open this — a little surprise</h1>
+        <p class="lead">A small page made with lots of ❤️ just for someone special. Press "Open Surprise" when you're ready.</p>
+      </div>
+    </header>
+
+    <div class="stage" style="margin-top:18px">
+      <div class="left">
+        <div class="float-area"><canvas id="confetti"></canvas></div>
+        <div class="heart" id="heart">❤️</div>
+        <div class="msg" id="msg">I love you soo much — more than words can hold.<br><small class="little">(Click "Surprise me" for more)</small></div>
+
+        <div class="btns">
+          <button id="openBtn" class="primary">Open Surprise</button>
+          <button id="secretBtn">Surprise me ✨</button>
+        </div>
+      </div>
+
+      <aside class="right">
+        <div class="scroll">
+          <h3 style="margin:0">Why I love you</h3>
+          <ul>
+            <li>Because your smile makes my day brighter.</li>
+            <li>Because you accept me with all my quirks.</li>
+            <li>Because every moment with you feels like home.</li>
+            <li>Because your laugh is my favorite song.</li>
+            <li>And simply — because you are you.</li>
+          </ul>
+          <p class="little">Tip: Press the heart or the buttons for playful animations.</p>
+        </div>
+
+        <div style="margin-top:auto;text-align:center">
+          <div class="little">Made with a secret ❤️ and a tiny bit of code.</div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>Share this page with her, or open it together — enjoy the surprise ✨</footer>
+  </div>
+
+  <script>
+    // Simple confetti + hearts animation and typed message
+    const confettiCanvas = document.getElementById('confetti');
+    const ctx = confettiCanvas.getContext('2d');
+    let W, H;
+    function resize(){ W = confettiCanvas.width = confettiCanvas.offsetWidth; H = confettiCanvas.height = confettiCanvas.offsetHeight }
+    addEventListener('resize', resize); resize();
+
+    // particles
+    const particles = [];
+    function rand(min,max){return Math.random()*(max-min)+min}
+    function makeConfetti(x,y){ for(let i=0;i<60;i++){ particles.push({x, y, vx:rand(-6,6), vy:rand(-10,-2), size:rand(6,12), rot:rand(0,360), vr:rand(-6,6), hue:rand(330,360) }) } }
+
+    function step(){ ctx.clearRect(0,0,W,H); for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.36; p.rot+=p.vr; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180); ctx.fillStyle='hsl('+p.hue+',85%,60%)'; ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6); ctx.restore(); if(p.y>H+50||p.x<-50||p.x>W+50) particles.splice(i,1); } requestAnimationFrame(step) }
+    requestAnimationFrame(step);
+
+    // heart pulse
+    const heart = document.getElementById('heart');
+    heart.addEventListener('click',()=>{ heart.classList.add('beat'); setTimeout(()=>heart.classList.remove('beat'),600); makeConfetti(W/2,H/3); playTone() })
+
+    // buttons
+    const msg = document.getElementById('msg');
+    document.getElementById('openBtn').addEventListener('click',()=>{ msg.classList.add('show'); makeConfetti(W/2,H/3); typeLove(); playMelody() })
+    document.getElementById('secretBtn').addEventListener('click',()=>{ // a little secret
+      revealSecret()
+    })
+
+    // typed message
+    const fullText = "I love you soo much. You are my favourite person in the whole wide world. Thank you for being YOU. ❤️";
+    async function typeLove(){ msg.textContent=''; for(let i=0;i<fullText.length;i++){ msg.textContent += fullText[i]; await new Promise(r=>setTimeout(r,22 + (i%6))); } msg.classList.add('show') }
+
+    // secret: small heart rain + playful message
+    function revealSecret(){ makeConfetti(W/2,H/2); msg.textContent = "Psst... one more thing: let's make tomorrow special. Meet me at 7?"; msg.classList.add('show'); playTone(440,0.08); }
+
+    // tiny web audio helpers
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq=520,dur=0.12){ const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type='sine'; o.frequency.value=freq; g.gain.value=0.04; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + dur); }
+
+    function playMelody(){ const notes=[520,640,780,880,780,640,520]; let t=0; notes.forEach((n,i)=>{ setTimeout(()=>playTone(n,0.12), t*140); t++; }) }
+
+    // friendly deploy hint: allow page to be loaded without JS errors if audio blocked
+    document.addEventListener('click',()=>{ if(audioCtx.state==='suspended') audioCtx.resume() },{once:true})
+
+    // small accessibility: focus open button on load
+    window.requestAnimationFrame(()=>document.getElementById('openBtn').focus())
+  </script>
+</body>
+</html>
